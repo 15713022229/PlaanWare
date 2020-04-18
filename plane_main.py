@@ -19,6 +19,7 @@ class PlaneGame(object):
 
         # 4. 设置定时器事件 - 创建敌机 1s
         pygame.time.set_timer(CREAT_ENEMY_EVENT, 1000)
+        pygame.time.set_timer(HERO_FIRE_EVNET, 500)
 
     def __creat_sprites(self):
         # 创建背景精灵和精灵组
@@ -60,6 +61,8 @@ class PlaneGame(object):
                 enemy = Enemy()
                 # 将敌人精灵添加到精灵族
                 self.enemy_group.add(enemy)
+            elif event.type == HERO_FIRE_EVNET:
+                self.hero.fire()
             # 事件监听每按下一次,只会响应一次
             # elif event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT:
             #    print("向右移动")
@@ -74,7 +77,19 @@ class PlaneGame(object):
 
 
     def __check_collide(self):
-        pass
+        # 子弹摧毁敌人
+        pygame.sprite.groupcollide(self.hero.bullets, self.enemy_group, True, True)
+        # 敌人毁灭英雄
+        enemies = pygame.sprite.spritecollide(self.hero, self.enemy_group, True)
+
+        # 判断列表是否有内容
+        if len(enemies) > 0:
+
+            # 让英雄牺牲
+            self.hero.kill()
+
+            # 结束游戏
+            PlaneGame.__game_over()
 
     def __update_sprites(self):
         self.back_group.update()
@@ -84,6 +99,9 @@ class PlaneGame(object):
 
         self.hero_group.update()
         self.hero_group.draw(self.screen)
+
+        self.hero.bullets.update()
+        self.hero.bullets.draw(self.screen)
 
     @staticmethod
     def __game_over():
